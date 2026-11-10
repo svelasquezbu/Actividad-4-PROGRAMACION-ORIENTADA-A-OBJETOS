@@ -1,0 +1,95 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class Main extends JFrame {
+
+    private JTextField txtNumerador;
+    private JTextField txtDenominador;
+    private JLabel lblResultado;
+
+    public Main() {
+        setTitle("Ejercicio 6.4 - Manejo de Excepciones");
+        setSize(400, 250);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new GridLayout(5, 2, 10, 10));
+
+        JLabel lblNumerador = new JLabel(" Numerador:");
+        txtNumerador = new JTextField();
+
+        JLabel lblDenominador = new JLabel(" Denominador:");
+        txtDenominador = new JTextField();
+
+        JButton btnCalcular = new JButton("Calcular División");
+        JButton btnLimpiar = new JButton("Limpiar");
+
+        lblResultado = new JLabel("Resultado: ", SwingConstants.CENTER);
+        lblResultado.setFont(new Font("Arial", Font.BOLD, 14));
+
+        add(lblNumerador);
+        add(txtNumerador);
+        add(lblDenominador);
+        add(txtDenominador);
+        add(btnCalcular);
+        add(btnLimpiar);
+        add(new JLabel());
+        add(lblResultado);
+
+        btnCalcular.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calcularDivision();
+            }
+        });
+
+        btnLimpiar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                txtNumerador.setText("");
+                txtDenominador.setText("");
+                lblResultado.setText("Resultado: ");
+            }
+        });
+    }
+
+    private void calcularDivision() {
+        try {
+            double numerador = Double.parseDouble(txtNumerador.getText().trim());
+            double denominador = Double.parseDouble(txtDenominador.getText().trim());
+
+            if (denominador == 0) {
+                throw new ArithmeticException("No es posible dividir entre cero.");
+            }
+
+            double resultado = numerador / denominador;
+            lblResultado.setText(String.format("Resultado: %.2f", resultado));
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Error: Ingrese valores numéricos válidos en ambos campos.",
+                "Error de Entrada",
+                JOptionPane.ERROR_MESSAGE
+            );
+            lblResultado.setText("Resultado: Error");
+        } catch (ArithmeticException ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Error Matemático: " + ex.getMessage(),
+                "División por Cero",
+                JOptionPane.WARNING_MESSAGE
+            );
+            lblResultado.setText("Resultado: Indeterminado");
+        } finally {
+            System.out.println("Operación de división procesada.");
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new Main().setVisible(true);
+        });
+    }
+}
