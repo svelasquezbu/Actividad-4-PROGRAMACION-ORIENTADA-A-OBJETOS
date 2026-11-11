@@ -1,0 +1,146 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
+// Excepciones personalizadas requeridas por el enunciado
+class ConstructorException extends Exception {
+    public ConstructorException(String m) { super(m); }
+}
+class SimboloNoEncontradoException extends Exception {
+    public SimboloNoEncontradoException(String m) { super(m); }
+}
+class ParametroNuloException extends Exception {
+    public ParametroNuloException(String m) { super(m); }
+}
+
+// 1. Clase del Primer Ejercicio (Constructor que lanza excepción)
+class ObjetoConExcepcion {
+    public ObjetoConExcepcion(String valor) throws ConstructorException {
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new ConstructorException("Constructor fallido: No se permite instanciar con valor vacío.");
+        }
+    }
+}
+
+// 2. Clase del Segundo Ejercicio (Tabla ASCII con get y set)
+class TablaASCII {
+    private Map<String, Integer> tabla = new HashMap<>();
+
+    public TablaASCII() {
+        // Carga inicial de caracteres ASCII básicos (32 al 126)
+        for (int i = 32; i <= 126; i++) {
+            tabla.put(String.valueOf((char) i), i);
+        }
+    }
+
+    public int get(String simbolo) throws ParametroNuloException, SimboloNoEncontradoException {
+        if (simbolo == null || simbolo.isEmpty()) {
+            throw new ParametroNuloException("Error: El símbolo a buscar no puede estar vacío.");
+        }
+        if (!tabla.containsKey(simbolo)) {
+            throw new SimboloNoEncontradoException("Error: El símbolo '" + simbolo + "' no existe en la tabla.");
+        }
+        return tabla.get(simbolo);
+    }
+
+    public void set(String simbolo, int numero) throws ParametroNuloException, IllegalArgumentException {
+        if (simbolo == null || simbolo.isEmpty()) {
+            throw new ParametroNuloException("Error: El símbolo a registrar no puede estar vacío.");
+        }
+        if (numero < 0 || numero > 255) {
+            throw new IllegalArgumentException("Error: El código ASCII debe estar entre 0 y 255.");
+        }
+        tabla.put(simbolo, numero);
+    }
+}
+
+// 3. Interfaz Gráfica Compacta y Completa
+public class Main extends JFrame {
+
+    private TablaASCII tablaASCII = new TablaASCII();
+    private JTextField txtSimbolo;
+    private JTextField txtNumero;
+    private JLabel lblEstado;
+
+    public Main() {
+        setTitle("Ejercicios Propuestos - Cap. 6");
+        setSize(480, 260);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        // Panel Central con los campos justos
+        JPanel panelCampos = new JPanel(new GridLayout(2, 2, 8, 8));
+        panelCampos.setBorder(BorderFactory.createEmptyBorder(15, 20, 5, 20));
+
+        panelCampos.add(new JLabel("Símbolo / Valor de prueba:"));
+        txtSimbolo = new JTextField();
+        panelCampos.add(txtSimbolo);
+
+        panelCampos.add(new JLabel("Código Numérico (solo para set):"));
+        txtNumero = new JTextField();
+        panelCampos.add(txtNumero);
+
+        // Panel de los 3 botones esenciales
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JButton btnGet = new JButton("Buscar (get)");
+        JButton btnSet = new JButton("Guardar (set)");
+        JButton btnConstructor = new JButton("Probar Constructor");
+
+        panelBotones.add(btnGet);
+        panelBotones.add(btnSet);
+        panelBotones.add(btnConstructor);
+
+        // Etiqueta inferior de respuesta
+        lblEstado = new JLabel("Listo. Prueba ingresando una letra (ej: C) y presiona Buscar.", SwingConstants.CENTER);
+        lblEstado.setBorder(BorderFactory.createEmptyBorder(5, 10, 15, 10));
+        lblEstado.setFont(new Font("Arial", Font.BOLD, 12));
+
+        add(panelCampos, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
+        add(lblEstado, BorderLayout.SOUTH);
+
+        // Acción: Buscar en Tabla ASCII (get)
+        btnGet.addActionListener(e -> {
+            try {
+                String simbolo = txtSimbolo.getText();
+                int codigo = tablaASCII.get(simbolo);
+                lblEstado.setText("ÉXITO (get): El símbolo '" + simbolo + "' equivale a " + codigo);
+            } catch (ParametroNuloException | SimboloNoEncontradoException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Excepción en get()", JOptionPane.WARNING_MESSAGE);
+                lblEstado.setText(ex.getMessage());
+            }
+        });
+
+        // Acción: Asociar en Tabla ASCII (set)
+        btnSet.addActionListener(e -> {
+            try {
+                String simbolo = txtSimbolo.getText();
+                int numero = Integer.parseInt(txtNumero.getText().trim());
+                tablaASCII.set(simbolo, numero);
+                lblEstado.setText("ÉXITO (set): Símbolo '" + simbolo + "' asociado al código " + numero);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Error: El código numérico debe ser un entero.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+            } catch (ParametroNuloException | IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Excepción en set()", JOptionPane.WARNING_MESSAGE);
+                lblEstado.setText(ex.getMessage());
+            }
+        });
+
+        // Acción: Probar Constructor
+        btnConstructor.addActionListener(e -> {
+            try {
+                new ObjetoConExcepcion(txtSimbolo.getText());
+                lblEstado.setText("ÉXITO: Objeto instanciado correctamente en el constructor.");
+            } catch (ConstructorException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Excepción en Constructor", JOptionPane.ERROR_MESSAGE);
+                lblEstado.setText(ex.getMessage());
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Main().setVisible(true));
+    }
+}
