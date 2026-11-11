@@ -1,0 +1,136 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+// 1. Clase Modelo: Vendedor
+class Vendedor {
+    private String nombre;
+    private String apellidos;
+    private int edad;
+
+    public Vendedor(String nombre, String apellidos, int edad) {
+        // Valida la edad antes de instanciar el objeto
+        verificarEdad(edad);
+        this.nombre = nombre;
+        this.apellidos = apellidos;
+        this.edad = edad;
+    }
+
+    // Método de verificación según las reglas explícitas del libro
+    public static void verificarEdad(int edad) throws IllegalArgumentException {
+        // Regla 1: Rango permitido de 0 a 120
+        if (edad < 0 || edad > 120) {
+            throw new IllegalArgumentException("La edad no puede ser negativa ni mayor a 120");
+        }
+        // Regla 2: Mayoría de edad (mínimo 18 años)
+        if (edad < 18) {
+            throw new IllegalArgumentException("El vendedor debe ser mayor de 18 años");
+        }
+    }
+
+    public String obtenerDatos() {
+        return String.format("Nombre: %s\nApellidos: %s\nEdad: %d años", nombre, apellidos, edad);
+    }
+}
+
+// 2. Interfaz Gráfica de Usuario (Guardar como Main.java en VS Code)
+public class Main extends JFrame {
+
+    private JTextField txtNombre;
+    private JTextField txtApellidos;
+    private JTextField txtEdad;
+    private JTextArea txtResultado;
+
+    public Main() {
+        setTitle("Ejercicio 6.5 - Clase Vendedor");
+        setSize(450, 350);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        // Panel de Formulario
+        JPanel panelFormulario = new JPanel(new GridLayout(3, 2, 8, 8));
+        panelFormulario.setBorder(BorderFactory.createTitledBorder("Datos del Vendedor"));
+
+        panelFormulario.add(new JLabel(" Nombre:"));
+        txtNombre = new JTextField();
+        panelFormulario.add(txtNombre);
+
+        panelFormulario.add(new JLabel(" Apellidos:"));
+        txtApellidos = new JTextField();
+        panelFormulario.add(txtApellidos);
+
+        panelFormulario.add(new JLabel(" Edad:"));
+        txtEdad = new JTextField();
+        panelFormulario.add(txtEdad);
+
+        // Botones
+        JPanel panelBotones = new JPanel(new FlowLayout());
+        JButton btnRegistrar = new JButton("Registrar Vendedor");
+        JButton btnLimpiar = new JButton("Limpiar");
+        panelBotones.add(btnRegistrar);
+        panelBotones.add(btnLimpiar);
+
+        // Área de Salida
+        txtResultado = new JTextArea(5, 30);
+        txtResultado.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(txtResultado);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Resultado del Registro"));
+
+        add(panelFormulario, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.SOUTH);
+
+        // Evento Registrar
+        btnRegistrar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registrarVendedor();
+            }
+        });
+
+        // Evento Limpiar
+        btnLimpiar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                txtNombre.setText("");
+                txtApellidos.setText("");
+                txtEdad.setText("");
+                txtResultado.setText("");
+            }
+        });
+    }
+
+    private void registrarVendedor() {
+        try {
+            String nombre = txtNombre.getText().trim();
+            String apellidos = txtApellidos.getText().trim();
+
+            if (nombre.isEmpty() || apellidos.isEmpty()) {
+                throw new IllegalArgumentException("Debe ingresar el nombre y los apellidos.");
+            }
+
+            int edad = Integer.parseInt(txtEdad.getText().trim());
+
+            // Instancia el vendedor (lanza IllegalArgumentException si la edad falla)
+            Vendedor vendedor = new Vendedor(nombre, apellidos, edad);
+
+            txtResultado.setText("VENDEDOR REGISTRADO EXITOSAMENTE:\n" + vendedor.obtenerDatos());
+            JOptionPane.showMessageDialog(this, "Vendedor creado con éxito.", "Registro OK", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "La edad debe ser un número entero válido.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            // Captura los mensajes exactos del enunciado ("El vendedor debe ser mayor de 18 años", etc.)
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error de Validación", JOptionPane.WARNING_MESSAGE);
+            txtResultado.setText("Error al registrar: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new Main().setVisible(true);
+        });
+    }
+}
