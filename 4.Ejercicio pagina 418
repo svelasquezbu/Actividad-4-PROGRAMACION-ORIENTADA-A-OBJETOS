@@ -1,0 +1,139 @@
+import javax.swing.*;
+import java.awt.*;
+
+// 1. Clase Modelo: EquipoMaratónProgramación
+class EquipoMaratonProgramacion {
+    private String nombreEquipo;
+    private String universidad;
+    private String lenguajeProgramacion;
+    private int tamanoEquipo;
+
+    public EquipoMaratonProgramacion(String nombreEquipo, String universidad, String lenguajeProgramacion, int tamanoEquipo) throws Exception {
+        validarCampos(nombreEquipo, universidad, lenguajeProgramacion, tamanoEquipo);
+        this.nombreEquipo = nombreEquipo;
+        this.universidad = universidad;
+        this.lenguajeProgramacion = lenguajeProgramacion;
+        this.tamanoEquipo = tamanoEquipo;
+    }
+
+    // Método de validación de campos según las reglas del Ejercicio 6.7
+    public static void validarCampos(String nombre, String universidad, String lenguaje, int tamano) throws Exception {
+        // Regla 1: Ningún campo de texto puede estar vacío
+        if (nombre == null || nombre.trim().isEmpty() ||
+            universidad == null || universidad.trim().isEmpty() ||
+            lenguaje == null || lenguaje.trim().isEmpty()) {
+            throw new IllegalArgumentException("Todos los campos de texto son obligatorios y no pueden estar vacíos.");
+        }
+
+        // Regla 2: Restringir longitud máxima (ej. máximo 20 caracteres como exige el libro)
+        if (nombre.length() > 20 || universidad.length() > 30) {
+            throw new IllegalArgumentException("El nombre del equipo (máx. 20) o universidad (máx. 30) excede la longitud permitida.");
+        }
+
+        // Regla 3: El nombre del equipo y universidad no deben contener dígitos numéricos
+        if (nombre.matches(".*\\d.*") || universidad.matches(".*\\d.*")) {
+            throw new IllegalArgumentException("El nombre del equipo y la universidad no deben contener números.");
+        }
+
+        // Regla 4: Tamaño del equipo (mínimo 2 y máximo 3 integrantes)
+        if (tamano < 2 || tamano > 3) {
+            throw new IllegalArgumentException("El tamaño del equipo debe ser mínimo 2 y máximo 3 programadores.");
+        }
+    }
+
+    public String obtenerResumen() {
+        return String.format(
+            "EQUIPO REGISTRADO:\n• Equipo: %s\n• Universidad: %s\n• Lenguaje: %s\n• Integrantes: %d programadores",
+            nombreEquipo, universidad, lenguajeProgramacion, tamanoEquipo
+        );
+    }
+}
+
+// 2. Interfaz Gráfica de Usuario (GUI Swing)
+public class Main extends JFrame {
+
+    private JTextField txtNombre;
+    private JTextField txtUniversidad;
+    private JTextField txtLenguaje;
+    private JTextField txtTamano;
+    private JTextArea txtSalida;
+
+    public Main() {
+        setTitle("Ejercicio 6.7 - Validación de Campos (Maratón)");
+        setSize(480, 380);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        // Panel Formulario
+        JPanel panelForm = new JPanel(new GridLayout(4, 2, 8, 8));
+        panelForm.setBorder(BorderFactory.createTitledBorder("Datos del Equipo de Maratón"));
+
+        panelForm.add(new JLabel(" Nombre del Equipo:"));
+        txtNombre = new JTextField();
+        panelForm.add(txtNombre);
+
+        panelForm.add(new JLabel(" Universidad:"));
+        txtUniversidad = new JTextField();
+        panelForm.add(txtUniversidad);
+
+        panelForm.add(new JLabel(" Lenguaje de Programación:"));
+        txtLenguaje = new JTextField();
+        panelForm.add(txtLenguaje);
+
+        panelForm.add(new JLabel(" Tamaño del Equipo (2 o 3):"));
+        txtTamano = new JTextField();
+        panelForm.add(txtTamano);
+
+        // Panel Botones
+        JPanel panelBotones = new JPanel(new FlowLayout());
+        JButton btnRegistrar = new JButton("Validar y Registrar");
+        JButton btnLimpiar = new JButton("Limpiar");
+        panelBotones.add(btnRegistrar);
+        panelBotones.add(btnLimpiar);
+
+        // Área de Salida
+        txtSalida = new JTextArea(6, 35);
+        txtSalida.setEditable(false);
+        JScrollPane scroll = new JScrollPane(txtSalida);
+        scroll.setBorder(BorderFactory.createTitledBorder("Resultado de Validación"));
+
+        add(panelForm, BorderLayout.NORTH);
+        add(panelBotones, BorderLayout.CENTER);
+        add(scroll, BorderLayout.SOUTH);
+
+        // Eventos
+        btnRegistrar.addActionListener(e -> registrarEquipo());
+        btnLimpiar.addActionListener(e -> {
+            txtNombre.setText("");
+            txtUniversidad.setText("");
+            txtLenguaje.setText("");
+            txtTamano.setText("");
+            txtSalida.setText("");
+        });
+    }
+
+    private void registrarEquipo() {
+        try {
+            String nombre = txtNombre.getText();
+            String universidad = txtUniversidad.getText();
+            String lenguaje = txtLenguaje.getText();
+            int tamano = Integer.parseInt(txtTamano.getText().trim());
+
+            EquipoMaratonProgramacion equipo = new EquipoMaratonProgramacion(nombre, universidad, lenguaje, tamano);
+            txtSalida.setText(equipo.obtenerResumen());
+            JOptionPane.showMessageDialog(this, "Equipo validado e inscrito correctamente.", "Registro Exitoso", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "El tamaño del equipo debe ser un número entero.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+            txtSalida.setText("Error: Tamaño no numérico.");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error de Validación de Campos", JOptionPane.WARNING_MESSAGE);
+            txtSalida.setText("Error de validación: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Main().setVisible(true));
+    }
+}
