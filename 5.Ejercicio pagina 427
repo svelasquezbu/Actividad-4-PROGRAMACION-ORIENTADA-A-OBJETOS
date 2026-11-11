@@ -1,0 +1,114 @@
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
+
+// 1. Clase Modelo: GestorArchivos
+class GestorArchivos {
+
+    // Método para leer un archivo de texto línea por línea
+    public static String leerArchivo(String rutaArchivo) throws FileNotFoundException, IOException {
+        if (rutaArchivo == null || rutaArchivo.trim().isEmpty()) {
+            throw new FileNotFoundException("La ruta o nombre del archivo no puede estar vacía.");
+        }
+
+        StringBuilder contenido = new StringBuilder();
+        // Uso de try-with-resources para garantizar el cierre del flujo
+        try (FileReader fr = new FileReader(rutaArchivo);
+             BufferedReader br = new BufferedReader(fr)) {
+
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                contenido.append(linea).append("\n");
+            }
+        }
+        return contenido.toString();
+    }
+
+    // Método para escribir texto en un archivo
+    public static void escribirArchivo(String rutaArchivo, String texto, boolean agregarAlFinal) throws IOException {
+        if (rutaArchivo == null || rutaArchivo.trim().isEmpty()) {
+            throw new IOException("Debe especificar un nombre o ruta válida para guardar el archivo.");
+        }
+
+        try (FileWriter fw = new FileWriter(rutaArchivo, agregarAlFinal);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+
+            bw.write(texto);
+            bw.newLine();
+        }
+    }
+}
+
+// 2. Interfaz Gráfica de Usuario (Swing)
+public class Main extends JFrame {
+
+    private JTextField txtNombreArchivo;
+    private JTextArea txtContenido;
+
+    public Main() {
+        setTitle("Ejercicio Pág. 427 - Lectura y Escritura de Archivos");
+        setSize(520, 380);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        // Panel Superior: Ruta o nombre del archivo
+        JPanel panelArchivo = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 10));
+        panelArchivo.add(new JLabel("Nombre del archivo (ej. datos.txt):"));
+        txtNombreArchivo = new JTextField("prueba.txt", 18);
+        panelArchivo.add(txtNombreArchivo);
+
+        // Panel Central: Área de texto para lectura/escritura
+        txtContenido = new JTextArea(10, 40);
+        txtContenido.setFont(new Font("Monospaced", Font.PLAIN, 13));
+        JScrollPane scrollPane = new JScrollPane(txtContenido);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Contenido del Archivo"));
+
+        // Panel Inferior: Botones de acción
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JButton btnEscribir = new JButton("Guardar en Archivo");
+        JButton btnLeer = new JButton("Leer Archivo");
+        JButton btnLimpiar = new JButton("Limpiar Área");
+
+        panelBotones.add(btnEscribir);
+        panelBotones.add(btnLeer);
+        panelBotones.add(btnLimpiar);
+
+        add(panelArchivo, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
+        add(panelBotones, BorderLayout.SOUTH);
+
+        // Evento: Guardar / Escribir archivo
+        btnEscribir.addActionListener(e -> {
+            try {
+                String archivo = txtNombreArchivo.getText().trim();
+                String texto = txtContenido.getText();
+                GestorArchivos.escribirArchivo(archivo, texto, false);
+                JOptionPane.showMessageDialog(this, "Archivo '" + archivo + "' guardado correctamente.", "Escritura Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error de Entrada/Salida al escribir:\n" + ex.getMessage(), "IOException", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Evento: Leer archivo
+        btnLeer.addActionListener(e -> {
+            try {
+                String archivo = txtNombreArchivo.getText().trim();
+                String contenidoLeido = GestorArchivos.leerArchivo(archivo);
+                txtContenido.setText(contenidoLeido);
+                JOptionPane.showMessageDialog(this, "Archivo '" + archivo + "' leído correctamente.", "Lectura Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } catch (FileNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "El archivo especificado no existe:\n" + ex.getMessage(), "FileNotFoundException", JOptionPane.WARNING_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error al leer el archivo:\n" + ex.getMessage(), "IOException", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Evento: Limpiar
+        btnLimpiar.addActionListener(e -> txtContenido.setText(""));
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Main().setVisible(true));
+    }
+}
